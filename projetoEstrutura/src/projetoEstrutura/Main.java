@@ -3,10 +3,10 @@ package projetoEstrutura;
 import java.util.*;
 
 public class Main {
-    static Map<Integer, Categorias> mapaCategorias = new HashMap<>();
+    static Map<Integer, Categorias> mapearCateg = new HashMap<>();
 
     public static void main(String[] args) {
-        Object[][] data = {
+        Object[][] dataset = {
             {1, "Raiz", "Produtos", -1},
             {2, "Móveis", "Móveis", 1},
             {3, "Eletrônicos", "Eletrônicos, Gadgets", 1},
@@ -17,6 +17,53 @@ public class Main {
             {8, "Eletrodomésticos de Cozinha", "", 5},
             {9, "Eletrodomésticos em Geral", "", 5}
         };
-        for(Object[] linha)
-    }  
-}    
+
+        for(Object[] registro : dataset) {
+            int id = (int) registro[0];
+            String nome = (String) registro[1];
+            String palavra = (String) registro[2];
+            int idPai = (int) registro[3]; 
+            
+            Categorias cat = new Categorias(id, nome, palavra, idPai);
+            mapearCateg.put(id, cat);
+        }
+
+        System.out.println(mapearCateg.size());
+    }
+    public static int nivel(int id) {
+    	int contador = 0;
+    	Categorias atual = mapearCateg.get(id);
+    	while(atual != null && atual.idPai != -1) {
+    		contador++;
+        	atual = mapearCateg.get(atual.idPai);
+    	}
+        return contador;
+    }
+    public static List<String> buscarPalavraC(int id){
+    	Categorias atual = mapearCateg.get(id);
+    	while(atual != null) {
+    		if(!atual.palavraChave.isEmpty()) {
+    			return atual.palavraChave;
+    		}
+    		atual = mapearCateg.get(atual.idPai);
+    	}
+    	return new ArrayList<>();
+    }
+    public static List<String> consultar(int id){
+    	List<String> devolver = new ArrayList<>();
+    	devolver.add(String.valueOf(nivel(id)));
+    	devolver.addAll(buscarPalavraC(id));
+    	return devolver;
+    }
+    public static List<List<String>> filtrar(String buscar){
+    	List<List<String>> resultado = new ArrayList<>();
+    	for(Categorias c : mapearCateg.values()) {
+    		List<String> palavraCateg = buscarPalavraC(c.ID);
+    		
+    		if(palavraCateg.contains(buscar)) {
+    			resultado.add(consultar(c.ID));
+    		}
+    	}
+    	return resultado;
+    }
+}
