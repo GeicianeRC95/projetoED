@@ -27,17 +27,29 @@ public class Main {
             Categorias cat = new Categorias(id, nome, palavra, idPai);
             mapearCateg.put(id, cat);
         }
-        Scanner sc = new Scanner(System.in);
-
-        System.out.println("Banco de dados de categorias pronto! " + mapearCateg.size());
         
-        System.out.print("Insira um ID correspondente a categoria: ");
-        int idInserido = sc.nextInt();
-        if(mapearCateg.containsKey(idInserido)) {
-        	System.out.println("Válido! Resultado da busca: " + consultar(idInserido));
-        }else {
-        	System.out.println("Inválido! O ID " + idInserido + "não existe!");
+        Scanner sc = new Scanner(System.in);
+        int idInserido = -1;
+        boolean idValido = false;
+        // Loop que insiste no ID até ser um número e existir no mapa
+        while (!idValido) {
+            System.out.print("Insira um ID correspondente a categoria: ");
+            try {
+                idInserido = sc.nextInt();
+                sc.nextLine(); // Limpa o buffer do Enter
+
+                if (mapearCateg.containsKey(idInserido)) {
+                    System.out.println("Válido! Resultado da busca: " + consultar(idInserido));
+                    idValido = true; // Sai do loop
+                } else {
+                    System.out.println("Inválido! O ID " + idInserido + " não existe. Tente novamente.");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Erro: Você deve digitar apenas NÚMEROS!");
+                sc.nextLine(); // Limpa a letra digitada para não travar o loop
+            }
         }
+
         System.out.print("\nInsira uma palavra para filtragem: ");
         String busca = sc.next();
         List<List<String>> encontrado = filtrar(busca);
@@ -79,7 +91,7 @@ public class Main {
     		List<String> palavraCateg = buscarPalavraC(c.ID);
     		
     		if(palavraCateg.toString().toLowerCase().contains(buscar.toLowerCase())) {
-    			resultado.add(consultar(c.ID));
+    		    resultado.add(consultar(c.ID));
     		}
     	}
     	return resultado;
