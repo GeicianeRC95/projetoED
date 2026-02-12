@@ -17,7 +17,7 @@ public class Main {
             {8, "Eletrodomésticos de Cozinha", "", 5},
             {9, "Eletrodomésticos em Geral", "", 5}
         };
-
+        
         for(Object[] registro : dataset) {
             int id = (int) registro[0];
             String nome = (String) registro[1];
@@ -27,8 +27,26 @@ public class Main {
             Categorias cat = new Categorias(id, nome, palavra, idPai);
             mapearCateg.put(id, cat);
         }
+        Scanner sc = new Scanner(System.in);
 
-        System.out.println(mapearCateg.size());
+        System.out.println("Banco de dados de categorias pronto! " + mapearCateg.size());
+        
+        System.out.print("Insira um ID correspondente a categoria: ");
+        int idInserido = sc.nextInt();
+        if(mapearCateg.containsKey(idInserido)) {
+        	System.out.println("Válido! Resultado da busca: " + consultar(idInserido));
+        }else {
+        	System.out.println("Inválido! O ID " + idInserido + "não existe!");
+        }
+        System.out.print("\nInsira uma palavra para filtragem: ");
+        String busca = sc.next();
+        List<List<String>> encontrado = filtrar(busca);
+        if(encontrado.isEmpty()) {
+            System.out.println("Filtragem: "+ busca + " =>  Nenhuma categoria encontrada");
+        }else {
+            System.out.println("Categorias encontradas: " + encontrado);
+        }
+        sc.close();
     }
     public static int nivel(int id) {
     	int contador = 0;
