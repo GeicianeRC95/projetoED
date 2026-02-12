@@ -1,115 +1,92 @@
-package projetoEstrutura;
-
-import java.util.*;
-
-public class Main {
+{
     static Map<Integer, Categorias> mapearCateg = new HashMap<>();
 
     public static void main(String[] args) {
+        
         Object[][] dataset = {
-            {1, "Raiz", "Produtos", -1},
-            {2, "Móveis", "Móveis", 1},
-            {3, "Eletrônicos", "Eletrônicos, Gadgets", 1},
-            {4, "Casa e Eletrodomésticos", "Casa, Eletrodomésticos", 1},
-            {5, "Eletrodomésticos Principais", "", 4},
-            {6, "Eletrodomésticos Secundários", "", 4},
-            {7, "Gramado e Jardim", "Gramado, Jardim", 4},
-            {8, "Eletrodomésticos de Cozinha", "", 5},
-            {9, "Eletrodomésticos em Geral", "", 5}
+                {1, "Raiz", "Produtos", -1},
+                {2, "Móveis", "Móveis", 1},
+                {3, "Eletrônicos", "Eletrônicos, Gadgets", 1},
+                {4, "Casa e Eletrodomésticos", "Casa, Eletrodomésticos", 1},
+                {5, "Eletrodomésticos Principais", "", 4},
+                {6, "Eletrodomésticos Secundários", "", 4},
+                {7, "Gramado e Jardim", "Gramado, Jardim", 4},
+                {8, "Eletrodomésticos de Cozinha", "", 5},
+                {9, "Eletrodomésticos em Geral", "", 5}
         };
 
+       
         for(Object[] registro : dataset) {
             int id = (int) registro[0];
             String nome = (String) registro[1];
             String palavra = (String) registro[2];
-            int idPai = (int) registro[3]; 
-            
+            int idPai = (int) registro[3];
+
             Categorias cat = new Categorias(id, nome, palavra, idPai);
             mapearCateg.put(id, cat);
         }
 
         Scanner sc = new Scanner(System.in);
-        System.out.println("Banco de dados pronto! Total: " + mapearCateg.size());
-        
-        // --- LOOP PARA O ID (Só sai quando o ID for válido) ---
-        int idInserido = -1;
-        boolean idValido = false;
-        while (!idValido) {
-            System.out.print("\nInsira um ID correspondente a categoria: ");
-            try {
-                idInserido = sc.nextInt();
-                sc.nextLine(); // Limpa o Enter
+        System.out.print("Digite a palavra-chave para busca (ex: Móveis ou Casa): ");
+        String busca = sc.nextLine();
 
-                if (mapearCateg.containsKey(idInserido)) {
-                    System.out.println("Válido! Resultado da busca: " + consultar(idInserido));
-                    idValido = true; 
-                } else {
-                    System.out.println("Inválido! O ID " + idInserido + " não existe no mapa.");
-                }
-            } catch (InputMismatchException e) {
-                System.out.println("Erro: Digite apenas NÚMEROS para o ID!");
-                sc.nextLine(); // Limpa a letra digitada
+        List<List<String>> resultados = filtrarPorPalavraChave(busca);
+
+        if (resultados.isEmpty()) {
+            System.out.println("Nenhuma categoria encontrada para: " + busca);
+        } else {
+            for (List<String> res : resultados) {
+                System.out.println(res);
             }
         }
-
-        // --- PARTE DA FILTRAGEM ---
-        System.out.print("\nInsira uma palavra ou frase para filtragem: ");
-        String busca = sc.nextLine();
-        List<List<String>> encontrado = filtrar(busca);
-        
-        if(encontrado.isEmpty()) {
-            System.out.println("Filtragem: [" + busca + "] => Nenhuma categoria encontrada");
-        } else {
-            System.out.println("Categorias encontradas: " + encontrado);
-        }
-        
         sc.close();
     }
-
-    // --- MÉTODOS PROTEGIDOS CONTRA ÓRFÃOS E CASE-SENSITIVE ---
-
+    
     public static int nivel(int id) {
-        int contador = 0;
+        int contador = 1; 
         Categorias atual = mapearCateg.get(id);
         while(atual != null && atual.idPai != -1) {
-            Categorias pai = mapearCateg.get(atual.idPai);
-            if (pai == null) break; // Proteção contra órfãos
-            
             contador++;
-            atual = pai;
+            atual = mapearCateg.get(atual.idPai);
         }
         return contador;
     }
-
+    
     public static List<String> buscarPalavraC(int id){
         Categorias atual = mapearCateg.get(id);
         while(atual != null) {
             if(!atual.palavraChave.isEmpty()) {
                 return atual.palavraChave;
             }
-            if (atual.idPai == -1 || !mapearCateg.containsKey(atual.idPai)) break; // Proteção
-            
             atual = mapearCateg.get(atual.idPai);
         }
         return new ArrayList<>();
     }
+    
+    public static List<List<String>> filtrarPorPalavraChave(String termo) {
+        List<List<String>> listaFinal = new ArrayList<>();
 
-    public static List<String> consultar(int id){
-        List<String> devolver = new ArrayList<>();
-        devolver.add(String.valueOf(nivel(id)));
-        devolver.addAll(buscarPalavraC(id));
-        return devolver;
-    }
+        for (Categorias c : mapearCateg.values()) {
+            List<String> kws = buscarPalavraC(c.ID);
 
-    public static List<List<String>> filtrar(String buscar){
-        List<List<String>> resultado = new ArrayList<>();
-        for(Categorias c : mapearCateg.values()) {
-            List<String> palavraCateg = buscarPalavraC(c.ID);
-            // Ignora maiúsculas e minúsculas
-            if(palavraCateg.toString().toLowerCase().contains(buscar.toLowerCase())) {
-                resultado.add(consultar(c.ID));
+           
+            boolean encontrou = false;
+            for(String s : kws) {
+                if(s.equalsIgnoreCase(termo)) {
+                    encontrou = true;
+                    break;
+                }
+            }
+
+            if (encontrou) {
+                List<String> item = new ArrayList<>();
+                item.add(String.valueOf(c.ID));         
+                item.add(String.valueOf(nivel(c.ID)));   
+                item.add(c.nome);                       
+                item.addAll(kws);                        
+                listaFinal.add(item);
             }
         }
-        return resultado;
+        return listaFinal;
     }
 }
