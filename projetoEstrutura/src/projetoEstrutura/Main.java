@@ -78,7 +78,7 @@ public class Main {
     	for(Categorias c : mapearCateg.values()) {
     		List<String> palavraCateg = buscarPalavraC(c.ID);
     		
-    		if(palavraCateg.contains(buscar)) {
+    		if(palavraCateg.toString().toLowerCase().contains(buscar.toLowerCase())) {
     			resultado.add(consultar(c.ID));
     		}
     	}
